@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}
+  Dog Breed Classifier
+{% endblock %}
+{% block page_content %}
+
+<div class="row">
+  <div class="col-md-12 col-lg-12 text-center">
+    <button onclick="toggle_left_panel()" class="btn btn-success">Toggle Image Gallery</button>
+  </div>
+
+  <!-- prediction part -->
+  <div id="left_panel" class="col-md-6 text-center">
+    <div>
+        <!-- image upload part -->
+        <div id="upload" class="row">
+          <h3>Upload image</h3>
+          <form method=post action="{{ url_for('make_prediction') }}" enctype=multipart/form-data>
+            <div class='form-group'>
+              <label class="btn btn-default btn-file">
+                  Browse<input type="file" name=file style="display: none;" accept="image/*" onchange="this.form.submit();">
+              </label>
+              <button type="submit" style="display: none;"></button>
+            </div>
+          </form>
+        </div>
+
+        <!-- prediction -->
+        {% if show_image %}
+          <div id="prediction" class="row">
+            <div class="col-md-12 text-center">
+                <h4>
+                    <span style="color:red">Breed: {{dog_label}}</span>
+                </h4>
+            </div>
+          </div>
+          <!-- render uploaded image -->
+          <div class="row" style="margin-top: 15px">
+            <div class="col-sm-12 col-md-12">
+              <a href="{{cur_image_path}}" data-toggle="lightbox">
+                <img class="img-responsive uploaded centered" src="{{cur_image_path}}" >
+              </a>
+            </div>
+          </div>
+        {% endif %}
+
+    </div>
+  </div>
+  <!-- gallery part -->
+  <div id="right_panel" class="col-md-6 text-center">
+      <h3>Recent images <span>({{images|length}} / {{num_stored_images}})</span></h3>
+      <div class="row gal">
+        {% for image in images %}
+          <div class="col-md-4 col-sm-6 col-xs-6" style="margin-top: 10px;">
+            <p>
+                <span style="color:blue">{{image['label']}}</span>
+                {{image['prob']}}
+            </p> 
+              <a href="{{image['path']}}" data-toggle="lightbox"
+                 data-title="Breed: {{image['label']}}</span>"
+                 data-footer="Probability: {{image['prob']}}">
+                <img class="img-responsive gal" src="{{image['path']}}">
+              </a>
+
+          </div>
+
+        {% endfor %}
+
+
+      </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.js"></script>
+  <script src="{{url_for('static', filename='custom.js')}}"></script>
+  <script type="text/javascript">
+    $(document).on('click', '[data-toggle="lightbox"]', function(event) {
+        event.preventDefault();
+        $(this).ekkoLightbox();
+    });
+  </script>
+{% endblock %}
