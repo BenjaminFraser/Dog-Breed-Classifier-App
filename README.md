@@ -6,4 +6,4 @@ The application makes use of pre-trained keras models by importing the selected 
 
 The data preprocessing and model training for the dog breed classifier is illustrated in the Jupyter notebook provided in the model_training/ directory.
 
-![example image](app_images/image_1.jpg?raw=True "Basic page layout of the flask app.")
+![example image](app_images/image_1.png?raw=True "Basic page layout of the flask app.")
