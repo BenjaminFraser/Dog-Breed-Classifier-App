@@ -190,15 +190,15 @@ def predict():
     if flask.request.method == "POST":
         if flask.request.files.get("image"):
             # read the image in PIL formats
-            image = flask.request.files["image"].read()
-            image = Image.open(io.BytesIO(image))
+            img = flask.request.files["image"].read()
+            img = Image.open(io.BytesIO(img))
 
             # preprocess the image and prepare it for classification
-            image = predictor.prepare_image(image, target_size=(299, 299), http_request=True)
+            img = predictor.prepare_image(img, target_size=(299, 299), http_request=True)
 
             # classify the input image and then initialize the list
             # of predictions to return to the client
-            predictions = predictor.model.predict(image)
+            predictions = predictor.model.predict(img)
 
             dog_label = predictor.decode_prediction(np.argmax(predictions, axis=-1)[0])
             print(dog_label)
@@ -248,6 +248,11 @@ def save_image(file, filename):
     # create folder for storing images if not exist
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
+
+    #img = file.read()
+    #img = Image.open(io.BytesIO(img))
+    #img = img.resize((299, 299))
+
 
     # save image to local directory
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -303,6 +308,7 @@ def get_recent_images(num_images=30):
 
     # list of tuples (file_path, timestamp)
     last_modified_files = [(file, os.path.getmtime(file)) for file in files]
+    print(last_modified_files)
     last_modified_files = sorted(last_modified_files,
                             key=lambda t: t[1], reverse=True)
     num_stored_images = len(last_modified_files)
