@@ -36,7 +36,7 @@
           <div id="prediction" class="row">
             <div class="col-md-12 text-center">
                 <h4>
-                    <span style="color:red">Breed: {{dog_label}}</span>
+                    <span style="color:red">Breed: {{labels['label_1'][0]}}</span>
                 </h4>
             </div>
           </div>
@@ -60,12 +60,12 @@
         {% for image in images %}
           <div class="col-md-4 col-sm-6 col-xs-6" style="margin-top: 10px;">
             <p>
-                <span style="color:blue">{{image['label']}}</span>
-                {{image['prob']}}
+                <span style="color:blue">{{image['labels']['label_1'][0]}}:</span>
+                {{'%0.2f'| format(image['labels']['label_1'][1]*100|float)}}%
             </p> 
               <a href="{{image['path']}}" data-toggle="lightbox"
-                 data-title="Best Prediction: {{image['label']}}</span>"
-                 data-footer="Probability: {{image['prob']}}">
+                 data-title="{{image['labels']['label_1'][0]}}"
+                 data-footer="Top Predictions: {{image['labels']['label_1'][0]}} ({{'%0.2f'| format(image['labels']['label_1'][1]*100|float)}}%), {{image['labels']['label_2'][0]}} ({{'%0.2f'| format(image['labels']['label_2'][1]*100|float)}}%), {{image['labels']['label_3'][0]}} ({{'%0.2f'| format(image['labels']['label_3'][1]*100|float)}}%)">
                 <img class="img-responsive gal" src="{{image['path']}}">
               </a>
 
