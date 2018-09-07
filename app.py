@@ -43,6 +43,7 @@ class PredictorModel(object):
         self.model = None
         self.class_labels = None 
 
+
     def load_model(self, model_path, class_labels_path):
         """ Load a given Keras pretrained model into our predictor class.
             The given model file must be of the filetype .h5. An accompanying
@@ -104,6 +105,29 @@ class PredictorModel(object):
         return std_img
 
 
+    def predictions_to_labels(self, predictions, top_n_labels=3):
+        """ takes an array of softmax prediction values and returns the top n labels 
+
+        Argument:
+            predictions: An array of softmax output probabilities representing label likelihood 
+            top_n_labels: The number of most likely output labels to return (default 3)
+
+        Returns:
+            A python dictionary containing the top n labels and associated probabilities as 
+            tuple values for each label, e.g. output_labels['label_1'] = ('boxer', 0.934532224)
+        """
+        # obtain top n prediction indices for array of predictions
+        top_indices = np.argpartition(predictions[0], -top_n_labels)[-top_n_labels:]
+
+        # negate prediction array to sort in descending order
+        sorted_top = top_indices[np.argsort(-predictions[0][top_indices])]
+
+        # dict comp to create dict of labels and probs
+        output_labels = {"label_" + str(i + 1) : (self.decode_prediction(index), float(predictions[0][index])) 
+                            for i, index in enumerate(sorted_top)}
+
+        return output_labels
+
     def decode_prediction(self, index):
         """ Decode predictions from a given index to provide predicted class 
 
@@ -111,7 +135,9 @@ class PredictorModel(object):
             index: An integer representing the index of the top prediction (argmax)
         """
         class_label = self.class_labels.keys()[self.class_labels.values().index(index)]
+        class_label = class_label.replace('_', ' ')
         return class_label
+
 #####################################################################################
 
 def init_image_info():
@@ -148,18 +174,14 @@ def make_prediction():
             # obtain prediction from our predictor model
             predictions = predictor.model.predict(img)
 
-            predict_label = predictor.decode_prediction(np.argmax(predictions, axis=-1)[0])
-            predict_prob = float(np.max(predictions[0]))
-
-            result = {"label" : str(predict_label), "probability" : predict_prob}
+            predict_labels = predictor.predictions_to_labels(predictions, top_n_labels=3)
 
             # save image info
-            save_image_info(filename, predict_label, predict_prob)
+            save_image_info(filename, predict_labels)
 
             # keep record of current prediction 
             info = {'file_name': filename, 
-                    'label' : predict_label,
-                    'probability' : predict_prob
+                    'labels' : predict_labels
                     }
 
             with open(CURRENT_IMAGE_INFO, 'w') as f:
@@ -167,8 +189,7 @@ def make_prediction():
 
             return render_template(
                     'index.html',
-                    dog_label=predict_label,
-                    predict_prob=predict_prob,
+                    labels=predict_labels,
                     cur_image_path=file_path,
                     show_image=True)
 
@@ -261,22 +282,19 @@ def save_image(file, filename):
     return file_path
 
 
-def save_image_info(filename, class_label, probability):
-    """Save predicted result of the image in a json file locally.
+def save_image_info(filename, class_labels):
+    """ Save predicted result of the image in a json file locally.
 
     Parameters:
         filename: string representing file name, including extension
-        class_label: string representing dog class label for top prediction
-        probability: float representing the probability of the top dog class
+        class_labels: A Python dict containing top label predictions, with a class label
+                        and probability given for each label as a tuple.
     """
 
     # save prediction info locally
     with open(IMAGE_INFO_JSON, 'r') as f:
         image_info = json.load(f)
-        image_info[filename] = {
-            'label': class_label,
-            'prob': float(probability)
-            }
+        image_info[filename] = class_labels
 
     with open(IMAGE_INFO_JSON, 'w') as f:
         json.dump(image_info, f, indent=4)
@@ -331,12 +349,14 @@ def get_recent_images(num_images=30):
             path, filename = f[0], f[0].replace(folder, '').replace('/', '')
             cur_image_info = info.get(filename, {})
 
-            image = {
+            print("CURRENT IMAGE INFO IS: {}".format(cur_image_info))
+
+            img = {
                 'path': path,
-                'label': cur_image_info.get('label', 'unknown'),
-                'prob' : cur_image_info.get('prob', 0)
+                'labels': cur_image_info
             }
-            image_stats.append(image)
+            print("CURRENT IMG LABEL DATA IS: {}".format(img['labels']))
+            image_stats.append(img)
 
     return image_stats, num_stored_images
 
