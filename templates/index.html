@@ -66,7 +66,7 @@
               <a href="{{image['path']}}" data-toggle="lightbox"
                  data-title="{{image['labels']['label_1'][0]}}"
                  data-footer="Top Predictions: {{image['labels']['label_1'][0]}} ({{'%0.2f'| format(image['labels']['label_1'][1]*100|float)}}%), {{image['labels']['label_2'][0]}} ({{'%0.2f'| format(image['labels']['label_2'][1]*100|float)}}%), {{image['labels']['label_3'][0]}} ({{'%0.2f'| format(image['labels']['label_3'][1]*100|float)}}%)">
-                <img class="img-responsive gal" src="{{image['path']}}">
+                <img class="img-responsive gal img-gal" src="{{image['path']}}" height="150px" width="150px">
               </a>
 
           </div>
